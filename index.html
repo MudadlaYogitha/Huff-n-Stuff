@@ -1,83 +1,336 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>File Compressor De-compressor</title>
-  <link rel="shortcut icon" href="assets/favicon.ico">
-  <link rel="stylesheet" type="text/css" href="styles.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="script.js" type="text/javascript"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File Compressor & De-compressor</title>
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --light-gray: #f4f6f8;
+      --line: #007bff;
+      --accent-dark: #0056b3;
+      --text: #333;
+      --success: #28a745;
+      --error: #dc3545;
+      --radius: 0.75rem;
+      --gap: 2rem;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: var(--light-gray);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      background: var(--bg);
+      border-bottom: 1px solid #ddd;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .navbar-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      color: var(--line);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .navbar-brand:hover { color: var(--accent-dark); }
+    .nav-link {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--line); }
+    main {
+      flex: 1;
+      padding: var(--gap) 1rem;
+    }
+    .steps {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+      padding-left: 2.5rem;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      left: 1.25rem;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--line);
+      border-radius: 2px;
+    }
+    .step {
+      position: relative;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: var(--gap);
+      margin-bottom: var(--gap);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-number {
+      position: absolute;
+      left: -1rem;
+      top: 1.5rem;
+      background: var(--line);
+      color: #fff;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      box-shadow: 0 0 0 5px var(--bg), 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .step.completed .step-number {
+      background: var(--success);
+    }
+    .step.completed .step-number::after {
+      content: '\f00c';
+      font-family: 'bootstrap-icons';
+    }
+    .step h3 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .step img {
+      height: 60px;
+      margin-bottom: 1rem;
+    }
+    .upload-area {
+      border: 2px dashed var(--line);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .upload-area.highlight {
+      border-color: var(--accent-dark);
+      background: rgba(0, 123, 255, 0.05);
+    }
+    .upload-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 400;
+    }
+    #selected-file {
+      font-size: 0.9rem;
+      color: var(--text);
+      font-style: italic;
+    }
+    .btn-action {
+      width: 100%;
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      background: var(--line);
+      color: #fff;
+      border: none;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-action:hover {
+      background: var(--accent-dark);
+    }
+    .btn-action:active {
+      transform: scale(0.98);
+    }
+    .btn-action:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #status-message {
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+    #status-message.success {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+    }
+    #status-message.error {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--error);
+    }
+    footer {
+      background: var(--bg);
+      padding: 1.5rem;
+      text-align: center;
+      border-top: 1px solid #ddd;
+      font-size: 0.9rem;
+      color: #666;
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    }
+  </style>
 </head>
-
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="index.html">
-        <img src="assets/txt-logo.png" width="30" height="30" class="d-inline-block align-top" alt="txt-logo" loading="lazy">
-        Just 2 Steps Ahead 🚀
-      </a>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-        <ul class="nav navbar-nav navbar-right">
-          <a class="nav-link active" aria-current="page" href="info.html" target="_blank">Unveil the Power Behind This Compression Technique💡</a>
-        </ul>
-      </div>
+  <nav>
+    <div class="navbar-container">
+      <a class="navbar-brand" href="index.html">Just 2 Steps Ahead 🚀</a>
+      <a class="nav-link" href="info.html" target="_blank">Power Behind Compression</a>
     </div>
   </nav>
 
-  <div class="bigdiv">
-    <div class="card text-center">
-      <div class="card-header" style="background-color:rgba(245, 241, 171, 0.58);"> <b>STEP 1</b>: UPLOAD YOUR FILE (<b>.txt</b> Files Only) </div>
-      <div class="align" id="step1">
-        <div class="card-body">
-          <img height="50" width="50" src="assets/upload.gif" alt="Upload" loading="lazy">
-          <br>
-          <form method="post" enctype="multipart/form-data" class="form" id="fileform">
-            <input class="file-input-button" type="file" id="uploadfile" class="input">
-            <input class="upload-button" type="button" id="submitbtn" class="input" value="Upload ⤒">
-          </form>
-          <br>
+  <main>
+    <div class="steps">
+      <!-- Step 1 -->
+      <div class="step" id="step1">
+        <div class="step-number">1</div>
+        <h3>Upload Your File (.txt)</h3>
+        <img src="assets/upload.gif" alt="Upload animation">
+        <div class="upload-area" role="region" aria-label="File upload area">
+          <label for="uploadfile" class="upload-label">Drag and drop a .txt file here or click to select</label>
+          <input type="file" id="uploadfile" accept=".txt" style="display:none;" aria-label="Upload a text file">
+          <p id="selected-file"></p>
         </div>
+        <button id="submitbtn" class="btn-action" disabled aria-label="Upload file">Upload</button>
       </div>
-    </div>
-    <br>
-    <div class="card text-center">
-      <div class="card-header" style="background-color:rgba(245, 241, 171, 0.58);"> <b>STEP 2</b>: SELECT ACTION </div>
-      <div class="align" id="step2">
-        <div class="card-body">
-          <img height="60" width="60" src="assets/action.gif" alt="action" loading="lazy">
-          <br>
-          <button type="button" id="encode" class="button">Compress ⭳</button>
-          &nbsp or &nbsp;
-          <button type="button" id="decode" class="button">De-compress ⭳</button>
-          <br>
-        </div>
-      </div>
-    </div>
-    <br>
-    <div class="card text-center">
-      <div class="card-header" style="background-color:rgba(245, 241, 171, 0.58);">SIT BACK AND RELAX</div>
-      <div class="align" id="step3">
-        <div class="card-body">
-          <img height="60" width="60" src="assets/emoji.gif" alt="emoji" loading="lazy">
-          <br>
-          <span class="align" id="text4">
-            <button class="reload-button" type="button" onclick="location.reload()">Reload</button> to Start Again!
-          </span>
-          <br>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <footer>
-    <p></p>
-  </footer>
+      <!-- Step 2 -->
+      <div class="step" id="step2">
+        <div class="step-number">2</div>
+        <h3>Choose Action</h3>
+        <img src="assets/action.gif" alt="Action animation">
+        <button id="encode" class="btn-action mb-2" disabled aria-label="Compress file">
+          <i class="bi bi-file-earmark-zip"></i> Compress
+        </button>
+        <button id="decode" class="btn-action" disabled aria-label="Decompress file">
+          <i class="bi bi-file-earmark-text"></i> Decompress
+        </button>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step" id="step3">
+        <div class="step-number">3</div>
+        <h3>Relax & Download</h3>
+        <img src="assets/emoji.gif" alt="Done animation">
+        <p id="status-message"></p>
+        <p>Your file download will start shortly.</p>
+        <button class="btn-action" onclick="location.reload()" aria-label="Restart the process">Start Again</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>© 2025 MudadlaYogitha</footer>
+
+  <script>
+    let fileContent = '';
+    const uploadInput = document.getElementById('uploadfile');
+    const uploadBtn = document.getElementById('submitbtn');
+    const encodeBtn = document.getElementById('encode');
+    const decodeBtn = document.getElementById('decode');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const uploadArea = document.querySelector('.upload-area');
+    const selectedFileP = document.getElementById('selected-file');
+    const statusMessage = document.getElementById('status-message');
+
+    // Drag-and-drop functionality
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.classList.add('highlight');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('highlight'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('highlight');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'text/plain') {
+        uploadInput.files = e.dataTransfer.files;
+        selectedFileP.textContent = `Selected file: ${file.name}`;
+        uploadBtn.disabled = false;
+      } else {
+        alert('Please drop a .txt file.');
+      }
+    });
+    uploadInput.addEventListener('change', () => {
+      const file = uploadInput.files[0];
+      if (file) {
+        selectedFileP.textContent = `Selected file: ${file.name}`;
+        uploadBtn.disabled = false;
+      }
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      const file = uploadInput.files[0];
+      if (!file) return alert('Please select a .txt file.');
+      const reader = new FileReader();
+      reader.onload = e => {
+        fileContent = e.target.result;
+        encodeBtn.disabled = false;
+        decodeBtn.disabled = false;
+        step1.classList.add('completed');
+      };
+      reader.readAsText(file);
+    });
+
+    encodeBtn.addEventListener('click', () => {
+      step2.classList.add('completed');
+      const compressed = btoa(unescape(encodeURIComponent(fileContent)));
+      download('compressed.txt', compressed);
+      statusMessage.textContent = 'File compressed successfully. Download started.';
+      statusMessage.className = 'success';
+      showStep3();
+    });
+
+    decodeBtn.addEventListener('click', () => {
+      step2.classList.add('completed');
+      try {
+        const decompressed = decodeURIComponent(escape(atob(fileContent)));
+        download('decompressed.txt', decompressed);
+        statusMessage.textContent = 'File decompressed successfully. Download started.';
+        statusMessage.className = 'success';
+        showStep3();
+      } catch {
+        statusMessage.textContent = 'Decompression failed. Please upload a valid compressed file.';
+        statusMessage.className = 'error';
+      }
+    });
+
+    function download(filename, text) {
+      const a = document.createElement('a');
+      a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function showStep3() {
+      step3.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
 </body>
-
 </html>
